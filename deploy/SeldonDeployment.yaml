@@ -1,0 +1,42 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: test-ab
+  namespace: gorokhov-test
+spec:
+  name: test-ab
+  predictors:
+    - componentSpecs:
+        - spec:
+            containers:
+              - image: blcox/dtc-model-ab:v1.0
+                imagePullPolicy: IfNotPresent
+                name: dtc-model
+                resources:
+                  requests:
+                    memory: 1Mi
+              - image: blcox/gbc-model-ab:v1.0
+                imagePullPolicy: IfNotPresent
+                name: gbc-model
+                resources:
+                  requests:
+                    memory: 1Mi
+            terminationGracePeriodSeconds: 20
+      name: default
+      replicas: 1
+      graph:
+        implementation: RANDOM_ABTEST
+        name: test-ab
+        parameters:
+          - name: ratioA
+            type: FLOAT
+            value: '0.5'
+        children:
+          - children: []
+            name: dtc-model
+            type: MODEL
+          - children: []
+            name: gbc-model
+            type: MODEL
+
+
